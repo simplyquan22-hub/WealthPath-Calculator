@@ -34,7 +34,7 @@ export function AnnualBreakdown({ data }: AnnualBreakdownProps) {
   return (
     <Accordion type="single" collapsible className="w-full mt-8">
       <AccordionItem value="item-1">
-        <AccordionTrigger className="text-lg font-medium">
+        <AccordionTrigger className="text-lg font-medium font-headline">
           View Annual Breakdown
         </AccordionTrigger>
         <AccordionContent>

@@ -14,15 +14,15 @@ export default function Home() {
               alt={bgImage.description}
               fill
               priority
-              className="object-cover opacity-20"
+              className="object-cover opacity-10"
               data-ai-hint={bgImage.imageHint}
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-background/50 via-background/80 to-background" />
+            <div className="absolute inset-0 bg-gradient-to-b from-background/30 via-background/70 to-background" />
           </div>
       )}
       <div className="container mx-auto px-4 py-12 sm:py-16 md:py-24">
         <div className="text-center mb-12">
-          <h1 className="text-4xl md:text-6xl font-bold tracking-tighter bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-300">
+          <h1 className="text-4xl md:text-6xl font-headline font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-b from-white to-neutral-400">
             WealthPath Calculator
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto mt-4">

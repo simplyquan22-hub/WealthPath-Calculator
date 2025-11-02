@@ -55,7 +55,7 @@ export interface InvestmentData {
   annualReturns: number;
 }
 
-const glassCardClasses = "bg-background/30 backdrop-blur-xl border border-white/10 shadow-2xl";
+const glassCardClasses = "bg-background/50 backdrop-blur-xl border border-white/10 shadow-xl shadow-black/10";
 
 export function WealthCalculator() {
   const [data, setData] = React.useState<InvestmentData[] | null>(null);
@@ -131,7 +131,7 @@ export function WealthCalculator() {
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
       <Card className={`lg:col-span-1 ${glassCardClasses}`}>
         <CardHeader>
-          <CardTitle className="text-2xl">Investment Details</CardTitle>
+          <CardTitle className="text-2xl font-headline">Investment Details</CardTitle>
         </CardHeader>
         <CardContent>
           <Form {...form}>
@@ -226,21 +226,21 @@ export function WealthCalculator() {
       {data && finalData ? (
         <Card className={glassCardClasses}>
           <CardHeader>
-            <CardTitle className="text-2xl">
+            <CardTitle className="text-2xl font-headline">
               Projected Growth
             </CardTitle>
              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 text-center">
-                <div className="rounded-lg p-4 bg-background/30">
+                <div className="rounded-lg p-4 bg-background/40">
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><TrendingUp className="h-4 w-4"/> Future Value</p>
                   <p className="text-2xl font-bold text-primary">{formatCurrency(finalData.projectedValue)}</p>
                 </div>
-                <div className="rounded-lg p-4 bg-background/30">
+                <div className="rounded-lg p-4 bg-background/40">
                   <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><PiggyBank className="h-4 w-4"/> Total Invested</p>
                   <p className="text-2xl font-bold">{formatCurrency(finalData.totalInvestment)}</p>
                 </div>
-                <div className="rounded-lg p-4 bg-background/30">
-                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><TrendingUp className="h-4 w-4 text-primary"/> Total Returns</p>
-                  <p className="text-2xl font-bold">{formatCurrency(finalData.totalReturns)}</p>
+                <div className="rounded-lg p-4 bg-background/40">
+                  <p className="text-sm text-muted-foreground flex items-center justify-center gap-2"><TrendingUp className="h-4 w-4 text-green-400"/> Total Returns</p>
+                  <p className="text-2xl font-bold text-green-400">{formatCurrency(finalData.totalReturns)}</p>
                 </div>
               </div>
           </CardHeader>
@@ -254,7 +254,7 @@ export function WealthCalculator() {
             <div className="p-4 bg-primary/20 rounded-full mb-4">
               <TrendingUp className="h-10 w-10 text-primary" />
             </div>
-            <h3 className="text-xl font-semibold">Your financial projection awaits.</h3>
+            <h3 className="text-xl font-semibold font-headline">Your financial projection awaits.</h3>
             <p className="text-muted-foreground mt-2">Fill out the form to visualize your investment journey.</p>
           </Card>
       )}
