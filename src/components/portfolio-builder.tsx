@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowRight } from "lucide-react";
 
@@ -20,17 +20,135 @@ const templates = {
 };
 
 const availableTickers = [
-    { value: 'AAPL', label: 'Apple Inc.', category: 'stocks' },
-    { value: 'GOOGL', label: 'Alphabet Inc.', category: 'stocks' },
-    { value: 'MSFT', label: 'Microsoft Corp.', category: 'stocks' },
-    { value: 'AMZN', label: 'Amazon.com, Inc.', category: 'stocks' },
-    { value: 'TSLA', label: 'Tesla, Inc.', category: 'stocks' },
-    { value: 'BND', label: 'Vanguard Total Bond Market ETF', category: 'bonds' },
-    { value: 'AGG', label: 'iShares Core U.S. Aggregate Bond ETF', category: 'bonds' },
-    { value: 'VCIT', label: 'Vanguard Intermediate-Term Corporate Bond ETF', category: 'bonds' },
-    { value: 'GLD', label: 'SPDR Gold Shares', category: 'alternatives' },
-    { value: 'VNQ', label: 'Vanguard Real Estate ETF', category: 'alternatives' },
+    { value: 'AAPL', label: 'Apple Inc.', category: 'stocks', group: 'Stocks' },
+    { value: 'MSFT', label: 'Microsoft Corp.', category: 'stocks', group: 'Stocks' },
+    { value: 'GOOGL', label: 'Alphabet Inc.', category: 'stocks', group: 'Stocks' },
+    { value: 'AMZN', label: 'Amazon.com Inc.', category: 'stocks', group: 'Stocks' },
+    { value: 'NVDA', label: 'NVIDIA Corp.', category: 'stocks', group: 'Stocks' },
+    { value: 'META', label: 'Meta Platforms Inc.', category: 'stocks', group: 'Stocks' },
+    { value: 'TSLA', label: 'Tesla Inc.', category: 'stocks', group: 'Stocks' },
+    { value: 'JPM', label: 'JPMorgan Chase & Co.', category: 'stocks', group: 'Stocks' },
+    { value: 'UNH', label: 'UnitedHealth Group', category: 'stocks', group: 'Stocks' },
+    { value: 'XOM', label: 'Exxon Mobil Corp.', category: 'stocks', group: 'Stocks' },
+    { value: 'V', label: 'Visa Inc.', category: 'stocks', group: 'Stocks' },
+    { value: 'PG', label: 'Procter & Gamble', category: 'stocks', group: 'Stocks' },
+    { value: 'JNJ', label: 'Johnson & Johnson', category: 'stocks', group: 'Stocks' },
+    { value: 'NKE', label: 'Nike Inc.', category: 'stocks', group: 'Stocks' },
+    { value: 'DIS', label: 'Walt Disney Co.', category: 'stocks', group: 'Stocks' },
+    { value: 'SPY', label: 'SPDR S&P 500 ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'VTI', label: 'Vanguard Total Stock Market ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'QQQ', label: 'Invesco QQQ Trust', category: 'stocks', group: 'ETFs' },
+    { value: 'IVV', label: 'iShares Core S&P 500 ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'SCHB', label: 'Schwab U.S. Broad Market ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'XLK', label: 'Technology Select Sector SPDR Fund', category: 'stocks', group: 'ETFs' },
+    { value: 'XLF', label: 'Financial Select Sector SPDR Fund', category: 'stocks', group: 'ETFs' },
+    { value: 'XLE', label: 'Energy Select Sector SPDR Fund', category: 'stocks', group: 'ETFs' },
+    { value: 'XLV', label: 'Health Care Select Sector SPDR Fund', category: 'stocks', group: 'ETFs' },
+    { value: 'VXUS', label: 'Vanguard Total International Stock ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'EFA', label: 'iShares MSCI EAFE ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'EEM', label: 'iShares MSCI Emerging Markets ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'ARKK', label: 'ARK Innovation ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'VOO', label: 'Vanguard S&P 500 ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'IWM', label: 'iShares Russell 2000 ETF', category: 'stocks', group: 'ETFs' },
+    { value: 'VFIAX', label: 'Vanguard 500 Index Fund Admiral Shares', category: 'stocks', group: 'Index Funds' },
+    { value: 'FXAIX', label: 'Fidelity 500 Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'SWPPX', label: 'Schwab S&P 500 Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VTSAX', label: 'Vanguard Total Stock Market Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'FSKAX', label: 'Fidelity Total Market Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VTIAX', label: 'Vanguard Total International Stock Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VBTLX', label: 'Vanguard Total Bond Market Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VINIX', label: 'Vanguard Institutional Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'FZROX', label: 'Fidelity ZERO Total Market Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'SWISX', label: 'Schwab International Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VSMAX', label: 'Vanguard Small-Cap Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VSIAX', label: 'Vanguard Small-Cap Value Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VIGAX', label: 'Vanguard Growth Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VIMAX', label: 'Vanguard Mid-Cap Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'FZILX', label: 'Fidelity ZERO International Index Fund', category: 'stocks', group: 'Index Funds' },
+    { value: 'VTSMX', label: 'Vanguard Total Stock Market Fund Investor Shares', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'FDGRX', label: 'Fidelity Growth Company Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'TRBCX', label: 'T. Rowe Price Blue Chip Growth Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'AMCPX', label: 'American Funds AMCAP Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'PRGFX', label: 'T. Rowe Price Growth Stock Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'FMAGX', label: 'Fidelity Magellan Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'DODGX', label: 'Dodge & Cox Stock Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'VDIGX', label: 'Vanguard Dividend Growth Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'VWELX', label: 'Vanguard Wellington Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'FCNTX', label: 'Fidelity Contrafund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'ANCFX', label: 'American Funds Fundamental Investors', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'AIVSX', label: 'American Funds Investment Company of America', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'FSPGX', label: 'Fidelity Large Cap Growth Index Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'RERFX', label: 'American Funds EuroPacific Growth Fund', category: 'stocks', group: 'Mutual Funds' },
+    { value: 'BND', label: 'Vanguard Total Bond Market ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'AGG', label: 'iShares Core U.S. Aggregate Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'TLT', label: 'iShares 20+ Year Treasury Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'IEF', label: 'iShares 7-10 Year Treasury Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'SHY', label: 'iShares 1-3 Year Treasury Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'HYG', label: 'iShares iBoxx High Yield Corporate Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'LQD', label: 'iShares Investment Grade Corporate Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'TIP', label: 'iShares TIPS Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'GOVT', label: 'iShares U.S. Treasury Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'MUB', label: 'iShares National Muni Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'BSV', label: 'Vanguard Short-Term Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'BLV', label: 'Vanguard Long-Term Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'ZROZ', label: 'PIMCO 25+ Year Zero Coupon Treasury ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'EDV', label: 'Vanguard Extended Duration Treasury ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'IGSB', label: 'iShares Short-Term Corporate Bond ETF', category: 'bonds', group: 'Bonds' },
+    { value: 'VNQ', label: 'Vanguard Real Estate ETF', category: 'alternatives', group: 'Real Estate' },
+    { value: 'SCHH', label: 'Schwab U.S. REIT ETF', category: 'alternatives', group: 'Real Estate' },
+    { value: 'IYR', label: 'iShares U.S. Real Estate ETF', category: 'alternatives', group: 'Real Estate' },
+    { value: 'XLRE', label: 'Real Estate Select Sector SPDR Fund', category: 'alternatives', group: 'Real Estate' },
+    { value: 'O', label: 'Realty Income Corp.', category: 'alternatives', group: 'Real Estate' },
+    { value: 'AMT', label: 'American Tower Corp.', category: 'alternatives', group: 'Real Estate' },
+    { value: 'PLD', label: 'Prologis Inc.', category: 'alternatives', group: 'Real Estate' },
+    { value: 'SPG', label: 'Simon Property Group', category: 'alternatives', group: 'Real Estate' },
+    { value: 'CCI', label: 'Crown Castle Inc.', category: 'alternatives', group: 'Real Estate' },
+    { value: 'PSA', label: 'Public Storage', category: 'alternatives', group: 'Real Estate' },
+    { value: 'EQR', label: 'Equity Residential', category: 'alternatives', group: 'Real Estate' },
+    { value: 'WELL', label: 'Welltower Inc.', category: 'alternatives', group: 'Real Estate' },
+    { value: 'AVB', label: 'AvalonBay Communities', category: 'alternatives', group: 'Real Estate' },
+    { value: 'NLY', label: 'Annaly Capital Management', category: 'alternatives', group: 'Real Estate' },
+    { value: 'STAG', label: 'STAG Industrial Inc.', category: 'alternatives', group: 'Real Estate' },
+    { value: 'GLD', label: 'SPDR Gold Shares', category: 'alternatives', group: 'Commodities' },
+    { value: 'SLV', label: 'iShares Silver Trust', category: 'alternatives', group: 'Commodities' },
+    { value: 'PPLT', label: 'Physical Platinum Shares ETF', category: 'alternatives', group: 'Commodities' },
+    { value: 'PALL', label: 'Physical Palladium Shares ETF', category: 'alternatives', group: 'Commodities' },
+    { value: 'USO', label: 'United States Oil Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'UNG', label: 'United States Natural Gas Fund', category: 'alternatives' , group: 'Commodities'},
+    { value: 'DBA', label: 'Invesco DB Agriculture Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'DBC', label: 'Invesco DB Commodity Index Tracking Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'UGA', label: 'United States Gasoline Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'WEAT', label: 'Teucrium Wheat Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'CORN', label: 'Teucrium Corn Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'SOYB', label: 'Teucrium Soybean Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'CPER', label: 'United States Copper Index Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'COMT', label: 'iShares GSCI Commodity ETF', category: 'alternatives', group: 'Commodities' },
+    { value: 'GLDM', label: 'SPDR Gold MiniShares Trust', category: 'alternatives', group: 'Commodities' },
+    { value: 'BTC', label: 'Bitcoin', category: 'alternatives', group: 'Crypto' },
+    { value: 'ETH', label: 'Ethereum', category: 'alternatives', group: 'Crypto' },
+    { value: 'SOL', label: 'Solana', category: 'alternatives', group: 'Crypto' },
+    { value: 'ADA', label: 'Cardano', category: 'alternatives', group: 'Crypto' },
+    { value: 'AVAX', label: 'Avalanche', category: 'alternatives', group: 'Crypto' },
+    { value: 'XRP', label: 'Ripple', category: 'alternatives', group: 'Crypto' },
+    { value: 'DOGE', label: 'Dogecoin', category: 'alternatives', group: 'Crypto' },
+    { value: 'DOT', label: 'Polkadot', category: 'alternatives', group: 'Crypto' },
+    { value: 'LTC', label: 'Litecoin', category: 'alternatives', group: 'Crypto' },
+    { value: 'LINK', label: 'Chainlink', category: 'alternatives', group: 'Crypto' },
+    { value: 'MATIC', label: 'Polygon', category: 'alternatives', group: 'Crypto' },
+    { value: 'TRX', label: 'TRON', category: 'alternatives', group: 'Crypto' },
+    { value: 'BCH', label: 'Bitcoin Cash', category: 'alternatives', group: 'Crypto' },
+    { value: 'NEAR', label: 'Near Protocol', category: 'alternatives', group: 'Crypto' },
+    { value: 'ICP', label: 'Internet Computer', category: 'alternatives', group: 'Crypto' },
 ];
+
+const tickerGroups = availableTickers.reduce((acc, ticker) => {
+    if (!acc[ticker.group]) {
+        acc[ticker.group] = [];
+    }
+    acc[ticker.group].push(ticker);
+    return acc;
+}, {} as Record<string, typeof availableTickers>);
+
 
 type Allocation = {
   stocks: number;
@@ -54,49 +172,60 @@ export function PortfolioBuilder() {
   const handleTemplateSelect = (template: "conservative" | "balanced" | "aggressive") => {
     setAllocation(templates[template]);
   };
-
-  const handleSliderChange = (newValues: number[]) => {
-    const [stocks, bonds] = newValues;
-    const alternatives = 100 - stocks - bonds;
-    if (alternatives >= 0) {
-      setAllocation({ stocks, bonds, alternatives });
-    }
-  };
   
   const handleSingleSliderChange = (name: keyof Allocation, value: number) => {
+    const currentValue = allocation[name];
+    const diff = value - currentValue;
+
     const otherSliders = Object.keys(allocation).filter(k => k !== name) as (keyof Allocation)[];
-    const remaining = 100 - value;
-    
-    if (remaining < 0) return;
+    let newAllocation = { ...allocation, [name]: value };
 
-    const currentTotalOfOthers = otherSliders.reduce((sum, key) => sum + allocation[key], 0);
-
-    let newAllocation: Partial<Allocation> = { [name]: value };
-
-    if (currentTotalOfOthers > 0) {
-        const ratio = remaining / currentTotalOfOthers;
-        otherSliders.forEach(key => {
-            newAllocation[key] = Math.round(allocation[key] * ratio);
-        });
-    } else {
-        // distribute equally if others are 0
-        const val = remaining / otherSliders.length;
-        otherSliders.forEach(key => {
-            newAllocation[key] = Math.round(val);
-        });
-    }
-
-    // Adjust for rounding errors to ensure total is 100
-    const total = Object.values(newAllocation).reduce((sum, v) => sum + (v || 0), 0);
-    if(total !== 100) {
-        const diff = 100-total;
-        const keyToAdjust = otherSliders[0];
-        if(newAllocation[keyToAdjust] !== undefined) {
-             newAllocation[keyToAdjust]! += diff;
+    // Distribute the difference to the other sliders
+    let remainingDiff = diff;
+    for (let i = 0; i < otherSliders.length; i++) {
+        const sliderKey = otherSliders[i];
+        const canTake = newAllocation[sliderKey] - remainingDiff;
+        if (canTake >= 0 && canTake <= 100) {
+            newAllocation[sliderKey] -= remainingDiff;
+            remainingDiff = 0;
+            break;
         }
     }
+
+    // If there's still a difference, adjust sliders that have room
+    if (remainingDiff !== 0) {
+      for (let i = 0; i < otherSliders.length; i++) {
+        const sliderKey = otherSliders[i];
+        const currentVal = newAllocation[sliderKey];
+        if(remainingDiff > 0) { // need to decrease others
+            const canDecrease = currentVal;
+            const decreaseBy = Math.min(remainingDiff, canDecrease);
+            newAllocation[sliderKey] -= decreaseBy;
+            remainingDiff -= decreaseBy;
+        } else { // need to increase others
+            const canIncrease = 100 - currentVal;
+            const increaseBy = Math.min(-remainingDiff, canIncrease);
+            newAllocation[sliderKey] += increaseBy;
+            remainingDiff += increaseBy;
+        }
+      }
+    }
     
-    setAllocation(newAllocation as Allocation);
+    // Final check to ensure it sums to 100
+    const total = Object.values(newAllocation).reduce((sum, v) => sum + v, 0);
+    if (total !== 100) {
+        const adjustment = 100 - total;
+        const keyToAdjust = otherSliders.find(k => newAllocation[k] + adjustment >= 0 && newAllocation[k] + adjustment <= 100) || otherSliders[0];
+        if (keyToAdjust) {
+          newAllocation[keyToAdjust] += adjustment;
+        }
+    }
+
+    setAllocation({
+      stocks: Math.round(newAllocation.stocks),
+      bonds: Math.round(newAllocation.bonds),
+      alternatives: Math.round(newAllocation.alternatives),
+    });
 };
 
 
@@ -147,6 +276,7 @@ export function PortfolioBuilder() {
       <Card className={glassCardClasses}>
         <CardHeader>
           <CardTitle className="text-2xl font-headline">3. Adjust Allocation</CardTitle>
+           <p className="text-sm text-muted-foreground">Total Allocation: {allocation.stocks + allocation.bonds + allocation.alternatives}%</p>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
@@ -174,7 +304,12 @@ export function PortfolioBuilder() {
                 <SelectValue placeholder="Search and add a ticker..." />
               </SelectTrigger>
               <SelectContent>
-                {availableTickers.map(t => <SelectItem key={t.value} value={t.value}>{t.label} ({t.value})</SelectItem>)}
+                {Object.entries(tickerGroups).map(([group, tickers]) => (
+                    <SelectGroup key={group}>
+                        <SelectLabel>{group}</SelectLabel>
+                        {tickers.map(t => <SelectItem key={t.value} value={t.value}>{t.label} ({t.value})</SelectItem>)}
+                    </SelectGroup>
+                ))}
               </SelectContent>
             </Select>
         </CardContent>
