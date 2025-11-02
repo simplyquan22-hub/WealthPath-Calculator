@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -13,7 +14,8 @@ import {
   TrendingUp,
   PiggyBank,
   ArrowRight,
-  Scale
+  Scale,
+  ArrowLeft,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -58,10 +60,12 @@ export interface InvestmentData {
 }
 
 const glassCardClasses = "bg-background/50 backdrop-blur-xl border border-white/10 shadow-xl shadow-black/10";
+const STORAGE_KEY = 'wealthpath-calculator-state';
 
 export function WealthCalculator() {
   const [data, setData] = React.useState<InvestmentData[] | null>(null);
   const [submittedValues, setSubmittedValues] = React.useState<FormData | null>(null);
+  const router = useRouter();
 
 
   const form = useForm<FormData>({
@@ -75,6 +79,29 @@ export function WealthCalculator() {
       accountType: "roth",
     },
   });
+
+  React.useEffect(() => {
+    try {
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        if (savedState) {
+            const savedValues = JSON.parse(savedState);
+            form.reset(savedValues);
+        }
+    } catch (error) {
+        console.error("Failed to parse calculator state from localStorage", error);
+    }
+  }, [form]);
+
+  const formValues = form.watch();
+
+  React.useEffect(() => {
+    try {
+        const stateToSave = JSON.stringify(formValues);
+        localStorage.setItem(STORAGE_KEY, stateToSave);
+    } catch (error) {
+        console.error("Failed to save calculator state to localStorage", error);
+    }
+  }, [formValues]);
 
   function onSubmit(values: FormData) {
     const generatedData = generateInvestmentData(values);
@@ -265,10 +292,16 @@ export function WealthCalculator() {
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full h-12 text-lg">
-                Calculate
-                <ArrowRight className="ml-2 h-5 w-5"/>
-              </Button>
+              <div className="flex items-center gap-4">
+                <Button onClick={() => router.back()} variant="outline" className="h-12 text-lg">
+                    <ArrowLeft className="mr-2 h-5 w-5" />
+                    Back
+                </Button>
+                <Button type="submit" className="w-full h-12 text-lg">
+                    Calculate
+                    <ArrowRight className="ml-2 h-5 w-5"/>
+                </Button>
+              </div>
             </form>
           </Form>
         </CardContent>

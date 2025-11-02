@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { ArrowRight, Trash2 } from "lucide-react";
+import { ArrowLeft, ArrowRight, Trash2 } from "lucide-react";
 
 const glassCardClasses = "bg-background/50 backdrop-blur-xl border border-white/10 shadow-xl shadow-black/10";
 
@@ -162,11 +162,37 @@ type Ticker = {
   category: "stocks" | "bonds" | "alternatives";
 };
 
+const STORAGE_KEY = 'wealthpath-portfolio-state';
+
 export function PortfolioBuilder() {
   const router = useRouter();
   const [portfolioName, setPortfolioName] = React.useState("");
   const [allocation, setAllocation] = React.useState<Allocation>({ stocks: 60, bonds: 30, alternatives: 10 });
   const [selectedTickers, setSelectedTickers] = React.useState<Ticker[]>([]);
+
+  React.useEffect(() => {
+    try {
+        const savedState = localStorage.getItem(STORAGE_KEY);
+        if (savedState) {
+            const { portfolioName, allocation, selectedTickers } = JSON.parse(savedState);
+            if (portfolioName) setPortfolioName(portfolioName);
+            if (allocation) setAllocation(allocation);
+            if (selectedTickers) setSelectedTickers(selectedTickers);
+        }
+    } catch (error) {
+        console.error("Failed to parse portfolio state from localStorage", error);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    try {
+        const stateToSave = JSON.stringify({ portfolioName, allocation, selectedTickers });
+        localStorage.setItem(STORAGE_KEY, stateToSave);
+    } catch (error) {
+        console.error("Failed to save portfolio state to localStorage", error);
+    }
+  }, [portfolioName, allocation, selectedTickers]);
+
 
   const handleTemplateSelect = (template: "conservative" | "balanced" | "aggressive") => {
     setAllocation(templates[template]);
@@ -359,7 +385,11 @@ export function PortfolioBuilder() {
         </CardContent>
       </Card>
 
-      <div className="flex justify-center">
+      <div className="flex justify-between">
+         <Button onClick={() => router.back()} variant="outline" className="h-12 text-lg px-8">
+            <ArrowLeft className="mr-2 h-5 w-5" />
+            Back
+        </Button>
         <Button onClick={() => router.push("/calculator")} className="h-12 text-lg px-8">
           Project My Growth
           <ArrowRight className="ml-2 h-5 w-5" />

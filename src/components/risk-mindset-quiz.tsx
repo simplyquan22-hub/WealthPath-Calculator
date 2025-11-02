@@ -77,11 +77,36 @@ const results = {
 };
 
 type Answers = { [key: string]: string };
+const STORAGE_KEY = 'wealthpath-quiz-state';
 
 export function RiskMindsetQuiz() {
   const [answers, setAnswers] = React.useState<Answers>({});
   const [score, setScore] = React.useState<number | null>(null);
   const router = useRouter();
+
+  React.useEffect(() => {
+    try {
+      const savedState = localStorage.getItem(STORAGE_KEY);
+      if (savedState) {
+        const { answers: savedAnswers, score: savedScore } = JSON.parse(savedState);
+        setAnswers(savedAnswers || {});
+        setScore(savedScore !== undefined ? savedScore : null);
+      }
+    } catch (error) {
+      console.error("Failed to parse quiz state from localStorage", error);
+      setAnswers({});
+      setScore(null);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    try {
+      const stateToSave = JSON.stringify({ answers, score });
+      localStorage.setItem(STORAGE_KEY, stateToSave);
+    } catch (error) {
+      console.error("Failed to save quiz state to localStorage", error);
+    }
+  }, [answers, score]);
 
   const handleValueChange = (questionId: string, value: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
@@ -118,7 +143,7 @@ export function RiskMindsetQuiz() {
             {questions.map((q) => (
               <div key={q.id}>
                 <h3 className="font-semibold text-lg mb-4">{q.text}</h3>
-                <RadioGroup onValueChange={(value) => handleValueChange(q.id, value)}>
+                <RadioGroup value={answers[q.id]} onValueChange={(value) => handleValueChange(q.id, value)}>
                   <div className="space-y-3">
                     {q.options.map((opt) => (
                       <div key={opt.id} className="flex items-center space-x-3">
