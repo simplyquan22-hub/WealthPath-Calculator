@@ -8,8 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { ArrowLeft, ArrowRight, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const glassCardClasses = "bg-background/50 backdrop-blur-xl border border-white/10 shadow-xl shadow-black/10";
 
@@ -17,6 +17,18 @@ const templates = {
   conservative: { stocks: 20, bonds: 70, alternatives: 10 },
   balanced: { stocks: 60, bonds: 30, alternatives: 10 },
   aggressive: { stocks: 90, bonds: 0, alternatives: 10 },
+};
+
+const categoryColors = {
+    stocks: "text-blue-400",
+    bonds: "text-green-400",
+    alternatives: "text-purple-400",
+};
+
+const categoryBgColors = {
+    stocks: "bg-blue-900/20",
+    bonds: "bg-green-900/20",
+    alternatives: "bg-purple-900/20",
 };
 
 const availableTickers = [
@@ -120,7 +132,7 @@ const availableTickers = [
     { value: 'UGA', label: 'United States Gasoline Fund', category: 'alternatives', group: 'Commodities' },
     { value: 'WEAT', label: 'Teucrium Wheat Fund', category: 'alternatives', group: 'Commodities' },
     { value: 'CORN', label: 'Teucrium Corn Fund', category: 'alternatives', group: 'Commodities' },
-    { value: 'SOYB', label: 'Teucrium Soybean Fund', category: 'alternatives', group: 'Commodities' },
+    { value: 'SOYB', label: 'Teucrium Soybean Fund', category: 'alternatives', group: 'Commodatives' },
     { value: 'CPER', label: 'United States Copper Index Fund', category: 'alternatives', group: 'Commodities' },
     { value: 'COMT', label: 'iShares GSCI Commodity ETF', category: 'alternatives', group: 'Commodities' },
     { value: 'GLDM', label: 'SPDR Gold MiniShares Trust', category: 'alternatives', group: 'Commodities' },
@@ -142,10 +154,11 @@ const availableTickers = [
 ];
 
 const tickerGroups = availableTickers.reduce((acc, ticker) => {
-    if (!acc[ticker.group]) {
-        acc[ticker.group] = [];
+    const group = ticker.group || "Other";
+    if (!acc[group]) {
+        acc[group] = [];
     }
-    acc[ticker.group].push(ticker);
+    acc[group].push(ticker);
     return acc;
 }, {} as Record<string, typeof availableTickers>);
 
@@ -199,38 +212,34 @@ export function PortfolioBuilder() {
   };
   
   const handleSingleSliderChange = (name: keyof Allocation, value: number) => {
-    const currentValue = allocation[name];
-    const diff = value - currentValue;
-
-    const otherSliders = Object.keys(allocation).filter(k => k !== name) as (keyof Allocation)[];
+    const oldValue = allocation[name];
+    const diff = value - oldValue;
     let newAllocation = { ...allocation, [name]: value };
 
-    // Distribute the difference to the other sliders
-    let remainingDiff = diff;
-    for (let i = 0; i < otherSliders.length; i++) {
-        const sliderKey = otherSliders[i];
-        if (newAllocation[sliderKey] - remainingDiff >= 0 && newAllocation[sliderKey] - remainingDiff <= 100) {
-            newAllocation[sliderKey] -= remainingDiff;
-            remainingDiff = 0;
-            break;
-        }
-    }
+    // The other two sliders that need to be adjusted
+    const otherKeys = (Object.keys(allocation) as (keyof Allocation)[]).filter(k => k !== name);
 
-    if (remainingDiff !== 0) {
-      const sliderToAdjust = otherSliders.find(k => newAllocation[k] - remainingDiff >= 0 && newAllocation[k] - remainingDiff <= 100) || otherSliders[0];
-       if(sliderToAdjust) {
-        newAllocation[sliderToAdjust] -= remainingDiff;
-      }
+    // Try to adjust the first other slider
+    let firstKey = otherKeys[0];
+    let secondKey = otherKeys[1];
+
+    if (newAllocation[firstKey] - diff >= 0 && newAllocation[firstKey] - diff <= 100) {
+        newAllocation[firstKey] -= diff;
+    } else {
+        // If the first one can't absorb the change, adjust what it can and pass the rest to the second
+        const firstKeyAdjustment = newAllocation[firstKey] - (diff > 0 ? 0 : 100);
+        newAllocation[firstKey] -= firstKeyAdjustment;
+        const remainingDiff = diff - firstKeyAdjustment;
+        newAllocation[secondKey] -= remainingDiff;
     }
     
-    // Ensure total is exactly 100
-    const total = Object.values(newAllocation).reduce((sum, v) => sum + v, 0);
-    const adjustment = 100 - total;
-    if (adjustment !== 0) {
-        const keyToAdjust = otherSliders.find(k => newAllocation[k] + adjustment >= 0 && newAllocation[k] + adjustment <= 100) || otherSliders[0];
-        if (keyToAdjust) {
-          newAllocation[keyToAdjust] += adjustment;
-        }
+    // Final check to ensure total is 100
+    const total = newAllocation.stocks + newAllocation.bonds + newAllocation.alternatives;
+    if (total !== 100) {
+        const adjustment = 100 - total;
+        // Apply adjustment to a slider that can take it without going out of bounds
+        const keyToAdjust = otherKeys.find(k => newAllocation[k] + adjustment >= 0 && newAllocation[k] + adjustment <= 100) || otherKeys[0];
+        newAllocation[keyToAdjust] += adjustment;
     }
 
     setAllocation({
@@ -292,15 +301,15 @@ export function PortfolioBuilder() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label className="flex justify-between text-base"><span>Stocks</span><span>{allocation.stocks}%</span></Label>
+            <Label className={cn("flex justify-between text-base", categoryColors.stocks)}><span>Stocks</span><span>{allocation.stocks}%</span></Label>
             <Slider value={[allocation.stocks]} onValueChange={(v) => handleSingleSliderChange("stocks", v[0])} max={100} step={1} />
           </div>
           <div className="space-y-2">
-            <Label className="flex justify-between text-base"><span>Bonds</span><span>{allocation.bonds}%</span></Label>
+            <Label className={cn("flex justify-between text-base", categoryColors.bonds)}><span>Bonds</span><span>{allocation.bonds}%</span></Label>
             <Slider value={[allocation.bonds]} onValueChange={(v) => handleSingleSliderChange("bonds", v[0])} max={100} step={1} />
           </div>
           <div className="space-y-2">
-            <Label className="flex justify-between text-base"><span>Alternatives</span><span>{allocation.alternatives}%</span></Label>
+            <Label className={cn("flex justify-between text-base", categoryColors.alternatives)}><span>Alternatives</span><span>{allocation.alternatives}%</span></Label>
             <Slider value={[allocation.alternatives]} onValueChange={(v) => handleSingleSliderChange("alternatives", v[0])} max={100} step={1} />
           </div>
         </CardContent>
@@ -319,7 +328,14 @@ export function PortfolioBuilder() {
                 {Object.entries(tickerGroups).map(([group, tickers]) => (
                     <SelectGroup key={group}>
                         <SelectLabel>{group}</SelectLabel>
-                        {tickers.map(t => <SelectItem key={t.value} value={t.value}>{t.label} ({t.value})</SelectItem>)}
+                        {tickers.map(t => (
+                            <SelectItem key={t.value} value={t.value}>
+                                <div className="flex items-center gap-2">
+                                    <span className={cn("w-2 h-2 rounded-full", categoryBgColors[t.category as keyof typeof categoryBgColors])} />
+                                    <span>{t.label} ({t.value})</span>
+                                </div>
+                            </SelectItem>
+                        ))}
                     </SelectGroup>
                 ))}
               </SelectContent>
@@ -335,12 +351,12 @@ export function PortfolioBuilder() {
             <div className="space-y-6">
                 <div>
                     <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-lg">Stocks</h4>
-                        <span className="text-lg font-bold">{allocation.stocks}%</span>
+                        <h4 className={cn("font-semibold text-lg", categoryColors.stocks)}>Stocks</h4>
+                        <span className={cn("text-lg font-bold", categoryColors.stocks)}>{allocation.stocks}%</span>
                     </div>
                     <div className="pl-4 space-y-2">
                         {getCategoryTickers("stocks").map(t => (
-                            <div key={t.id} className="flex items-center justify-between p-2 rounded-md bg-background/30">
+                            <div key={t.id} className={cn("flex items-center justify-between p-2 rounded-md", categoryBgColors.stocks)}>
                                 <span>{t.name} ({t.id})</span>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveTicker(t.id)}>
                                     <Trash2 className="h-4 w-4" />
@@ -351,12 +367,12 @@ export function PortfolioBuilder() {
                 </div>
                  <div>
                     <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-lg">Bonds</h4>
-                        <span className="text-lg font-bold">{allocation.bonds}%</span>
+                        <h4 className={cn("font-semibold text-lg", categoryColors.bonds)}>Bonds</h4>
+                        <span className={cn("text-lg font-bold", categoryColors.bonds)}>{allocation.bonds}%</span>
                     </div>
                     <div className="pl-4 space-y-2">
                         {getCategoryTickers("bonds").map(t => (
-                             <div key={t.id} className="flex items-center justify-between p-2 rounded-md bg-background/30">
+                             <div key={t.id} className={cn("flex items-center justify-between p-2 rounded-md", categoryBgColors.bonds)}>
                                 <span>{t.name} ({t.id})</span>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveTicker(t.id)}>
                                     <Trash2 className="h-4 w-4" />
@@ -367,12 +383,12 @@ export function PortfolioBuilder() {
                 </div>
                  <div>
                     <div className="flex justify-between items-center mb-2">
-                        <h4 className="font-semibold text-lg">Alternatives</h4>
-                        <span className="text-lg font-bold">{allocation.alternatives}%</span>
+                        <h4 className={cn("font-semibold text-lg", categoryColors.alternatives)}>Alternatives</h4>
+                        <span className={cn("text-lg font-bold", categoryColors.alternatives)}>{allocation.alternatives}%</span>
                     </div>
                     <div className="pl-4 space-y-2">
                         {getCategoryTickers("alternatives").map(t => (
-                             <div key={t.id} className="flex items-center justify-between p-2 rounded-md bg-background/30">
+                             <div key={t.id} className={cn("flex items-center justify-between p-2 rounded-md", categoryBgColors.alternatives)}>
                                 <span>{t.name} ({t.id})</span>
                                 <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={() => handleRemoveTicker(t.id)}>
                                     <Trash2 className="h-4 w-4" />
@@ -386,11 +402,11 @@ export function PortfolioBuilder() {
       </Card>
 
       <div className="flex justify-between">
-         <Button onClick={() => router.back()} variant="outline" className="h-12 text-lg px-8">
+         <Button onClick={() => router.back()} variant="outline" size="lg">
             <ArrowLeft className="mr-2 h-5 w-5" />
             Back
         </Button>
-        <Button onClick={() => router.push("/calculator")} className="h-12 text-lg px-8">
+        <Button onClick={() => router.push("/calculator")} size="lg">
           Project My Growth
           <ArrowRight className="ml-2 h-5 w-5" />
         </Button>
