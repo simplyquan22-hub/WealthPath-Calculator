@@ -1,0 +1,67 @@
+"use client";
+
+import * as React from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+import type { InvestmentData } from "@/components/wealth-calculator";
+
+interface AnnualBreakdownProps {
+  data: InvestmentData[];
+}
+
+const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat("en-US", {
+      style: "currency",
+      currency: "USD",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  };
+
+export function AnnualBreakdown({ data }: AnnualBreakdownProps) {
+  return (
+    <Accordion type="single" collapsible className="w-full mt-8">
+      <AccordionItem value="item-1">
+        <AccordionTrigger className="text-lg font-medium">
+          View Annual Breakdown
+        </AccordionTrigger>
+        <AccordionContent>
+          <div className="max-h-96 overflow-y-auto pr-2">
+            <Table>
+              <TableHeader className="sticky top-0 bg-background/80 backdrop-blur-sm">
+                <TableRow>
+                  <TableHead className="w-[100px]">Year</TableHead>
+                  <TableHead>Contributions</TableHead>
+                  <TableHead>Returns</TableHead>
+                  <TableHead className="text-right">End Value</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((item) => (
+                  <TableRow key={item.year}>
+                    <TableCell className="font-medium">{item.year}</TableCell>
+                    <TableCell>{formatCurrency(item.annualContributions)}</TableCell>
+                    <TableCell className="text-green-400">{formatCurrency(item.annualReturns)}</TableCell>
+                    <TableCell className="text-right font-semibold">{formatCurrency(item.projectedValue)}</TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+}
