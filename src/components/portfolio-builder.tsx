@@ -216,31 +216,32 @@ export function PortfolioBuilder() {
     const diff = value - oldValue;
     let newAllocation = { ...allocation, [name]: value };
 
-    // The other two sliders that need to be adjusted
     const otherKeys = (Object.keys(allocation) as (keyof Allocation)[]).filter(k => k !== name);
 
-    // Try to adjust the first other slider
     let firstKey = otherKeys[0];
     let secondKey = otherKeys[1];
-
-    if (newAllocation[firstKey] - diff >= 0 && newAllocation[firstKey] - diff <= 100) {
-        newAllocation[firstKey] -= diff;
-    } else {
-        // If the first one can't absorb the change, adjust what it can and pass the rest to the second
-        const firstKeyAdjustment = newAllocation[firstKey] - (diff > 0 ? 0 : 100);
-        newAllocation[firstKey] -= firstKeyAdjustment;
-        const remainingDiff = diff - firstKeyAdjustment;
-        newAllocation[secondKey] -= remainingDiff;
-    }
+    let total = newAllocation.stocks + newAllocation.bonds + newAllocation.alternatives;
     
-    // Final check to ensure total is 100
-    const total = newAllocation.stocks + newAllocation.bonds + newAllocation.alternatives;
-    if (total !== 100) {
-        const adjustment = 100 - total;
-        // Apply adjustment to a slider that can take it without going out of bounds
-        const keyToAdjust = otherKeys.find(k => newAllocation[k] + adjustment >= 0 && newAllocation[k] + adjustment <= 100) || otherKeys[0];
-        newAllocation[keyToAdjust] += adjustment;
+    if (total > 100) {
+        const excess = total - 100;
+        if(newAllocation[firstKey] >= excess) {
+            newAllocation[firstKey] -= excess;
+        } else {
+            const remaining = excess - newAllocation[firstKey];
+            newAllocation[firstKey] = 0;
+            newAllocation[secondKey] -= remaining;
+        }
+    } else if (total < 100) {
+        const deficit = 100 - total;
+         if(newAllocation[firstKey] + deficit <= 100) {
+            newAllocation[firstKey] += deficit;
+        } else {
+            const remaining = (newAllocation[firstKey] + deficit) - 100;
+            newAllocation[firstKey] = 100;
+            newAllocation[secondKey] += remaining;
+        }
     }
+
 
     setAllocation({
       stocks: Math.round(newAllocation.stocks),
