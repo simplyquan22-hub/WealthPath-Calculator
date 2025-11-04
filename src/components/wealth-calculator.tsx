@@ -114,58 +114,53 @@ export function WealthCalculator() {
     const monthlyRate = interestRate / 100 / 12;
     const taxRate = marginalTaxRate / 100;
     const result: InvestmentData[] = [];
-    let lastYearEndValue = initialInvestment;
-
-    const calculateTaxes = (value: number, totalInvestment: number) => {
+  
+    const calculateTaxes = (value: number) => {
       if (accountType === 'traditional') {
-        const gains = value - totalInvestment;
-        // Assuming contributions are pre-tax and entire withdrawal is taxed. A simplification.
-        if (value > totalInvestment) {
-             return value * (1 - taxRate);
-        }
+        return value * (1 - taxRate);
       }
       return value;
-    }
-
+    };
+  
+    // Year 0
+    let lastYearEndValue = initialInvestment;
     result.push({
       year: 0,
       totalInvestment: initialInvestment,
       projectedValue: initialInvestment,
       totalReturns: 0,
-      annualContributions: 0,
+      annualContributions: initialInvestment, // Start with initial investment
       annualReturns: 0,
     });
-
+  
     for (let year = 1; year <= years; year++) {
-      const months = year * 12;
-      const fvInitial = initialInvestment * Math.pow(1 + monthlyRate, months);
-      const fvContributions = monthlyContribution > 0 ? monthlyContribution * ((Math.pow(1 + monthlyRate, months) - 1) / monthlyRate) : 0;
-      
-      const preTaxValue = fvInitial + fvContributions;
-      const totalInvestment = initialInvestment + (monthlyContribution * months);
-
-      const projectedValue = calculateTaxes(preTaxValue, totalInvestment);
-
+      let currentYearStartValue = lastYearEndValue;
       const annualContributions = monthlyContribution * 12;
-      const lastYearTotalInvestment = initialInvestment + (monthlyContribution * (months - 12));
-      const lastYearPreTaxValue = lastYearEndValue > 0 ? (fvInitial / Math.pow(1 + monthlyRate, 12)) + (fvContributions - annualContributions * ((Math.pow(1+monthlyRate, 12)-1)/monthlyRate) ) / Math.pow(1+monthlyRate,12) : 0;
-      const lastYearProjectedValue = calculateTaxes(lastYearPreTaxValue, lastYearTotalInvestment);
+      let endOfYearValue = currentYearStartValue;
+  
+      // Calculate growth month by month for accuracy
+      for (let month = 1; month <= 12; month++) {
+        endOfYearValue = (endOfYearValue + monthlyContribution) * (1 + monthlyRate);
+      }
+  
+      const totalInvestment = initialInvestment + year * 12 * monthlyContribution;
+      
+      const afterTaxValue = calculateTaxes(endOfYearValue);
+      const afterTaxLastYearValue = calculateTaxes(lastYearEndValue);
 
-
-      const annualReturns = projectedValue - lastYearProjectedValue - annualContributions;
-      const totalReturns = projectedValue - totalInvestment;
-
-
+      const annualReturns = afterTaxValue - afterTaxLastYearValue - annualContributions;
+      const totalReturns = afterTaxValue - totalInvestment;
+  
       result.push({
         year,
         totalInvestment,
-        projectedValue,
+        projectedValue: afterTaxValue,
         totalReturns,
-        annualContributions,
-        annualReturns,
+        annualContributions: annualContributions,
+        annualReturns: annualReturns,
       });
-
-      lastYearEndValue = preTaxValue;
+  
+      lastYearEndValue = endOfYearValue; // Update for the next year's calculation
     }
     return result;
   };
@@ -347,7 +342,3 @@ export function WealthCalculator() {
     </div>
   );
 }
-
-    
-
-    
