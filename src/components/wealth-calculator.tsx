@@ -1,3 +1,4 @@
+
 "use client";
 
 import * as React from "react";
@@ -95,23 +96,30 @@ export function WealthCalculator() {
   const formValues = form.watch();
 
   React.useEffect(() => {
-    try {
+    const handleSave = () => {
+      try {
         const stateToSave = JSON.stringify(formValues);
         localStorage.setItem(STORAGE_KEY, stateToSave);
-    } catch (error) {
+      } catch (error) {
         console.error("Failed to save calculator state to localStorage", error);
-    }
+      }
+    };
+    
+    const debounceSave = setTimeout(handleSave, 500);
+    return () => clearTimeout(debounceSave);
   }, [formValues]);
 
   function onSubmit(values: FormData) {
     const generatedData = generateInvestmentData(values);
     setData(generatedData);
     setSubmittedValues(values);
+    window.scrollTo(0, 0);
   }
 
   const generateInvestmentData = (inputs: FormData): InvestmentData[] => {
     const { initialInvestment, monthlyContribution, interestRate, years, accountType, marginalTaxRate } = inputs;
-    const monthlyRate = interestRate / 100 / 12;
+    const annualRate = interestRate / 100;
+    const monthlyRate = annualRate / 12;
     const taxRate = marginalTaxRate / 100;
     const result: InvestmentData[] = [];
   
@@ -127,43 +135,47 @@ export function WealthCalculator() {
     result.push({
       year: 0,
       totalInvestment: initialInvestment,
-      projectedValue: initialInvestment,
+      projectedValue: calculateTaxes(initialInvestment),
       totalReturns: 0,
-      annualContributions: initialInvestment, // Start with initial investment
+      annualContributions: initialInvestment,
       annualReturns: 0,
     });
   
     for (let year = 1; year <= years; year++) {
-      let currentYearStartValue = lastYearEndValue;
+      let endOfYearValue = lastYearEndValue;
       const annualContributions = monthlyContribution * 12;
-      let endOfYearValue = currentYearStartValue;
   
-      // Calculate growth month by month for accuracy
+      // Calculate growth for the year with monthly contributions
       for (let month = 1; month <= 12; month++) {
-        endOfYearValue = (endOfYearValue + monthlyContribution) * (1 + monthlyRate);
+        endOfYearValue = (endOfYearValue * (1 + monthlyRate)) + monthlyContribution;
       }
-  
-      const totalInvestment = initialInvestment + year * 12 * monthlyContribution;
-      
-      const afterTaxValue = calculateTaxes(endOfYearValue);
-      const afterTaxLastYearValue = calculateTaxes(lastYearEndValue);
+      // Correction for monthly contribution formula: The loop above adds one month too many of contributions to the final value, so we subtract one. A more standard formula is P(1+r)^n + M(...).
+      // Let's use a standard future value of a series formula for more accuracy over the year.
+      const principalGrowth = lastYearEndValue * Math.pow(1 + annualRate, 1);
+      const contributionsGrowth = (monthlyContribution * (Math.pow(1 + monthlyRate, 12) - 1) / monthlyRate) * (1 + monthlyRate);
+      endOfYearValue = principalGrowth + contributionsGrowth;
 
-      const annualReturns = afterTaxValue - afterTaxLastYearValue - annualContributions;
-      const totalReturns = afterTaxValue - totalInvestment;
-  
+      const totalInvestment = initialInvestment + year * annualContributions;
+      const projectedValue = calculateTaxes(endOfYearValue);
+      const totalReturns = projectedValue - totalInvestment;
+
+      const lastYearProjectedValue = result[result.length - 1].projectedValue;
+      const annualReturns = projectedValue - lastYearProjectedValue - calculateTaxes(annualContributions);
+      
       result.push({
         year,
         totalInvestment,
-        projectedValue: afterTaxValue,
+        projectedValue: projectedValue,
         totalReturns,
-        annualContributions: annualContributions,
+        annualContributions: calculateTaxes(annualContributions),
         annualReturns: annualReturns,
       });
   
-      lastYearEndValue = endOfYearValue; // Update for the next year's calculation
+      lastYearEndValue = endOfYearValue;
     }
     return result;
   };
+  
   
   const finalData = data ? data[data.length - 1] : null;
 
@@ -271,7 +283,7 @@ export function WealthCalculator() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Account Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger className="h-12 text-base md:text-sm">
                            <Briefcase className="mr-2 h-4 w-4" />
@@ -326,7 +338,7 @@ export function WealthCalculator() {
           </CardHeader>
           <CardContent>
             <InvestmentChart data={data} />
-            <AnnualBreakdown data={data.slice(1)} />
+            <AnnualBreakdown data={data.filter(d => d.year > 0)} />
           </CardContent>
         </Card>
       ) : (
@@ -342,3 +354,5 @@ export function WealthCalculator() {
     </div>
   );
 }
+
+    
