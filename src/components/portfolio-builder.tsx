@@ -17,29 +17,12 @@ const glassCardClasses = "bg-background/50 backdrop-blur-xl border-t border-l bo
 const templates = {
   conservative: {
     allocation: { stocks: 20, bonds: 70, alternatives: 10 },
-    tickers: [
-      { id: 'VT', name: 'Vanguard Total World Stock ETF', category: 'stocks', allocation: 20 },
-      { id: 'BND', name: 'Vanguard Total Bond Market ETF', category: 'bonds', allocation: 70 },
-      { id: 'GLD', name: 'SPDR Gold Shares', category: 'alternatives', allocation: 10 },
-    ]
   },
   balanced: {
     allocation: { stocks: 60, bonds: 30, alternatives: 10 },
-    tickers: [
-      { id: 'VTI', name: 'Vanguard Total Stock Market ETF', category: 'stocks', allocation: 40 },
-      { id: 'VXUS', name: 'Vanguard Total International Stock ETF', category: 'stocks', allocation: 20 },
-      { id: 'BND', name: 'Vanguard Total Bond Market ETF', category: 'bonds', allocation: 30 },
-      { id: 'VNQ', name: 'Vanguard Real Estate ETF', category: 'alternatives', allocation: 10 },
-    ]
   },
   aggressive: {
     allocation: { stocks: 90, bonds: 0, alternatives: 10 },
-    tickers: [
-      { id: 'VOO', name: 'Vanguard S&P 500 ETF', category: 'stocks', allocation: 50 },
-      { id: 'QQQ', name: 'Invesco QQQ Trust', category: 'stocks', allocation: 25 },
-      { id: 'EEM', name: 'iShares MSCI Emerging Markets ETF', category: 'stocks', allocation: 15 },
-      { id: 'ARKK', name: 'ARK Innovation ETF', category: 'alternatives', allocation: 10 },
-    ]
   },
 };
 
@@ -241,8 +224,7 @@ export function PortfolioBuilder() {
   const handleTemplateSelect = (template: "conservative" | "balanced" | "aggressive") => {
     const selectedTemplate = templates[template];
     setAllocation(selectedTemplate.allocation);
-    // @ts-ignore
-    setSelectedTickers(selectedTemplate.tickers);
+    setSelectedTickers([]); // Clear tickers to encourage user learning
   };
   
   const handleSingleSliderChange = (name: keyof Allocation, value: number) => {
@@ -456,5 +438,3 @@ export function PortfolioBuilder() {
     </div>
   );
 }
-
-    
