@@ -217,8 +217,8 @@ export function RiskMindsetQuiz() {
             <div className="text-center flex flex-col items-center">
               <h2 className="text-2xl md:text-3xl font-bold font-headline mb-2">{resultData.title}</h2>
               <p className="text-muted-foreground text-lg mb-8">{resultData.message}</p>
-              <AnimatedButton asChild>
-                <Link href="/portfolio-builder" className="flex items-center">
+              <AnimatedButton asChild className="w-full">
+                <Link href="/portfolio-builder" className="flex items-center justify-center">
                   {resultData.buttonText}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
