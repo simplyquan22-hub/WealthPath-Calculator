@@ -10,10 +10,12 @@ const CustomRadio = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
 >(({ className, ...props }, ref) => {
   return (
-    <div className={cn("custom-radio", className)}>
+    // The RadioGroupPrimitive.Item is the input itself.
+    // The checkmark is a sibling for the CSS to work.
+    <>
         <RadioGroupPrimitive.Item ref={ref} {...props} />
         <div className="checkmark"></div>
-    </div>
+    </>
   );
 });
 CustomRadio.displayName = "CustomRadio";

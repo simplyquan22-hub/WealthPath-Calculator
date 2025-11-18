@@ -194,7 +194,7 @@ export function RiskMindsetQuiz() {
                 <RadioGroup value={answers[q.id]} onValueChange={(value) => handleValueChange(q.id, value)}>
                   <div className="space-y-3">
                     {q.options.map((opt) => (
-                       <Label key={opt.id} htmlFor={`${q.id}-${opt.id}`} className="flex items-center space-x-3 cursor-pointer">
+                       <Label key={opt.id} htmlFor={`${q.id}-${opt.id}`} className="custom-radio flex items-center space-x-3">
                         <CustomRadio
                           id={`${q.id}-${opt.id}`}
                           value={String(opt.value)}
@@ -221,8 +221,8 @@ export function RiskMindsetQuiz() {
             <div className="text-center flex flex-col items-center">
               <h2 className="text-2xl md:text-3xl font-bold font-headline mb-2">{resultData.title}</h2>
               <p className="text-muted-foreground text-lg mb-8">{resultData.message}</p>
-              <AnimatedButton asChild className="w-full flex items-center justify-center">
-                <Link href="/portfolio-builder">
+              <AnimatedButton asChild className="w-full">
+                <Link href="/portfolio-builder" className="flex items-center justify-center">
                   {resultData.buttonText}
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>
